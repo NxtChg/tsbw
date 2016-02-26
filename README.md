@@ -8,7 +8,7 @@ So I made The Simplest Bitcoin Wallet :)
 
 https://simcoin.info/tsbw/
 
-Mostly for myself, but maybe somebody will find it useful too.
+Mostly for myself, but maybe somebody will find it useful too. Main discussion is [here](https://simtalk.org:444/index.php?topic=174).
 
 Please help test it, if you have a spare minute.
 
