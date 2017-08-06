@@ -44,9 +44,7 @@ function backend_send_cb(data)
 
 	try{ data = JSON.parse(data); res = data.responseText; } catch(e){ data = {}; }
 
-	console.log(data);
-
-	backend.send_cb(data.txid ? '' : res);
+	backend.send_cb(data.txid ? '' : data);
 }//____________________________________________________________________________
 
 backend.get_balance = function(adr, cb)

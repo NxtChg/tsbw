@@ -510,7 +510,7 @@ btc.new_tx = function()
 	
 			b = b.concat(btc.hex2bin(t.outpoint.hash).reverse(), btc.n2bytes(t.outpoint.index, 4));
 			b = b.concat(btc.n2vint(t.script.buffer.length), t.script.buffer);
-//			b = b.concat(btc.n2bytes(t.value,    8));
+			b = b.concat(btc.n2bytes(t.value,    8));
 			b = b.concat(btc.n2bytes(t.sequence, 4));
 
 			b = b.concat(SHAx2(this._get_outputs()));
