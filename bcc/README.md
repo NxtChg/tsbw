@@ -12,7 +12,7 @@ Mostly for myself, but maybe somebody will find it useful too.
 
 Please help test it, if you have a spare minute.
 
-If you like it, send some love here: 13nwZVh9RsKuZGegVn5KWHM51dA98Mho5f.
+If you like it, send some love here: 19BryCNdGs5F48J6yvw41pVSd5RDiA4j1x.
 
 ----
 

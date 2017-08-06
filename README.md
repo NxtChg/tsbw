@@ -12,7 +12,7 @@ Mostly for myself, but maybe somebody will find it useful too. Main discussion i
 
 Please help test it, if you have a spare minute.
 
-If you like it, send some love here: 13nwZVh9RsKuZGegVn5KWHM51dA98Mho5f.
+If you like it, send some love here: 19BryCNdGs5F48J6yvw41pVSd5RDiA4j1x.
 
 ----
 
@@ -32,7 +32,7 @@ var keys = btc.get_keys('123'); // 123 = passphrase
 var signed = tx.sign(keys); console.log(signed);
 ```
 
-Nothing is sent to my server, everything is done in the browser. It gets utxo and sends signed txs via external API's. 
+Nothing is sent to my server, everything is done in the browser. It gets utxo and sends signed txs via external API's.
 
 All API access is wrapped in a "backend" object, which can be easily swapped. I wrote two: for blochchain.info and blockexplorer.com.
 
