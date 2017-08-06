@@ -1,0 +1,186 @@
+<!DOCTYPE HTML>
+<html>
+<head><title>TSBW: The Simplest Bitcoin Wallet</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="description" content="TSBW: The Simplest Bitcoin Wallet">
+<meta name="keywords" content="tsbw,simple,simplest,online,bitcoin,wallet,btc,js,browser">
+<style>
+	html, body{ width:100%; height:100%; margin:0; line-height:20px; background:#eee; }
+	a{ color:#16E; text-decoration:none; cursor:pointer; }
+	a.visited{ color:#16E; }
+	a:hover{ color:red; }
+	input { height:18px; padding:3px 4px; font-size:14px; margin:2px 0; }
+	button{ padding:4px 12px; font-size:14px; }
+	
+	#page{ width:496px; height:264px; position:absolute; top:0; right:0; left:0; bottom:0; margin:auto;  background:#F5F5F5; text-align:center; font-family:arial; font-size:14px; overflow:hidden; }
+	#pass_form, #send_form{ padding:30px; color:#888; text-align:left; display:none; }
+	#pass_form{ text-align:center; display:none; }
+	#passphrase{ width:310px; }
+	
+	#to     { width:268px; }
+	#amount { width: 66px; }
+	#status { color:#777;  }
+	#adr    { font-size:16px; color:#666; }
+	#wif    { font-size:14px; }
+	#balance{ color:#C74; font-size:20px; }
+
+	#close, #made{ position:absolute; color:#BBB; font-family:verdana,arial; }
+	#close:hover { color:#555; }
+	#close       { top:   5px; right:10px; cursor:pointer; }
+	#made        { bottom:6px; right:12px; font-size:13px; text-align:right; }
+
+	#bcc{ color: #17f; font-size:16px; font-weight:bold; po3sition:absolute; le4ft:10px; t4op:8px; line-height:42px; background:#fff; }
+</style>
+<script language='JavaScript' type='text/javascript' src='common.js'></script>
+<script language='JavaScript' type='text/javascript' src='hashes.js'></script>
+<script language='JavaScript' type='text/javascript' src='jsbn.js'></script>
+<script language='JavaScript' type='text/javascript' src='elliptic.js'></script>
+<script language='JavaScript' type='text/javascript' src='btc.js'></script>
+<script language='JavaScript' type='text/javascript' src='backend_bdz.js'></script>
+</head>
+<body>
+
+<div id=page>
+<div id=bcc>Bitcoin Cash version</div>
+
+<form id=pass_form action="javascript:open_wallet();">
+	<input id=passphrase type=password placeholder="Passphrase" title="Can also use compressed WIF key.">&nbsp;<button type=submit>Open</button><br>
+	<br><br>Nothing is sent to our server, everything is done in the browser.<br>It gets utxo and sends signed txs via <span id=backend></span> API.
+	<br><br>You can download it from <a href='https://github.com/NxtChg/tsbw' target=_blank>github</a> and use it locally.
+</form>
+
+<form id=send_form action="javascript:send_tx();">
+	<span id=adr></span><br><br>
+	<span id=balance>Balance: </span><br><br>
+	<input id=to type=text placeholder="Address">&nbsp;<input id=amount type=text placeholder="Amount">&nbsp;<button type=submit>Send</button>
+	<br><br><div id=status></div>
+	<div id=close onclick="location.reload()" title="sign out">X</div>
+</form>
+
+</div>
+
+<div id=made>Created by NxtChg<br><span style="font-size:10px">13nwZVh9RsKuZGegVn5KWHM51dA98Mho5f</span></div>
+
+<script>
+
+var tx, keys, fee = 0.0001;
+
+function balance_cb(amount)
+{
+	if(isNaN(amount)) amount = '?'; else amount = js.format_money(amount, 8);
+
+	$('balance').innerHTML = "<span title='click to refresh' onclick='refresh(true);' style='cursor:pointer'>Balance: <b id=amt>" + amount + "</b> BTC</span> (<a href='" + backend.adr_page + keys.adr + "' target=_blank>transactions</a>)";
+}//____________________________________________________________________________
+
+function refresh(set_amount)
+{
+	if(set_amount) $('amt').innerHTML = '?';
+
+	backend.get_balance(keys.adr, balance_cb);
+}//____________________________________________________________________________
+
+function open_wallet()
+{
+	var pass = js.trim($('passphrase').value); if(pass.length < 1) return;
+
+	keys = btc.get_keys(pass);
+
+	$('pass_form').hide();
+	$('send_form').show();
+	$('to').focus();
+
+	$('adr').innerHTML = "<b style='font-size:16px'>" + keys.adr + "</b>&ndash;[<a href='javascript:show_wif()'>wif</a>]&ndash;<br><span id=wif></span>";
+
+	refresh(); setInterval(refresh, 60000);
+}//____________________________________________________________________________
+
+function show_wif(){ $('wif').innerHTML = ($('wif').innerHTML == '' ? keys.wif : ''); }
+//_____________________________________________________________________________
+
+function broadcast_cb(res)
+{
+	if(res == '')
+	{
+		$('to'    ).value = '';
+		$('amount').value = '';
+		$('status').innerHTML = '<a href="http://blockdozer.com/insight/tx/' + tx.txid() + '" target=_blank>Transaction</a> sent.';
+	}
+	else $('status').innerHTML = 'Error: ' + res;
+
+	tx = null; js.enable_form('send_form', true); setTimeout(refresh, 1000);
+}//____________________________________________________________________________
+
+function broadcast()
+{
+	$('status').innerHTML = 'Signing tx...';
+
+	var signed = tx.sign(keys);
+    
+	$('status').innerHTML = 'Broadcasting...';
+
+	backend.send(signed, broadcast_cb);
+}//____________________________________________________________________________
+
+function unspent_cb(utxo)
+{
+	if(utxo !== false)
+	{
+		var total = tx.add_unspent(utxo), err = '';
+	
+		var tx_total = tx.amount + fee;
+	
+		if(total >= tx_total)
+		{
+			var change = total - tx_total;
+
+			if(change > 0.000001) tx.add_output(keys.adr, change);
+
+			setTimeout(broadcast, 300);
+
+			return;
+		}
+		else err = 'Not enough money! Need ' + js.format_money(tx_total - total, 8) + ' BTC more.';
+	}
+	else err = 'Failed to get unspent outputs!';
+
+	tx = null; js.enable_form('send_form', true); $('status').innerHTML = err;
+}//____________________________________________________________________________
+
+function send_tx()
+{
+    var dst = js.trim($('to').value), amount = parseFloat(js.trim($('amount').value));
+
+    if(dst == '' || btc.decode_adr(dst) === false || isNaN(amount) || amount < 0.0001) return;
+
+    if(confirm('Send ' + amount + ' BTC to ' + dst + '?'))
+    {
+       	tx = btc.new_tx();
+
+		tx.add_output(dst, amount);
+
+    	js.enable_form('send_form', false);
+
+		$('status').innerHTML = 'Getting unspent outputs...';
+
+		backend.get_utxo(keys.adr, unspent_cb);
+    }
+}//____________________________________________________________________________
+
+if(!JSON || !JSON.parse) alert("Your browser doesn't support native JSON decoding. This page will not work, sorry.");
+else
+{
+	var x = new XMLHttpRequest();
+
+	if('withCredentials' in x)
+	{
+		$('backend').innerHTML = backend.link;
+		$('pass_form' ).show();
+		$('passphrase').focus();
+	}
+	else alert("Your browser dosen't support Cross-Origin Resource Sharing. This page will not work, sorry.");
+}
+
+</script>
+
+</body>
+</head>
