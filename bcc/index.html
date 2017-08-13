@@ -36,7 +36,7 @@
 <script language='JavaScript' type='text/javascript' src='jsbn.js'></script>
 <script language='JavaScript' type='text/javascript' src='elliptic.js'></script>
 <script language='JavaScript' type='text/javascript' src='btc.js'></script>
-<script language='JavaScript' type='text/javascript' src='backend_bdz.js'></script>
+<script language='JavaScript' type='text/javascript' src='backend_cbc.js'></script>
 </head>
 <body>
 
@@ -44,7 +44,7 @@
 <div id=bcc>Bitcoin Cash version</div>
 
 <form id=pass_form action="javascript:open_wallet();">
-	<input id=passphrase type=password placeholder="Passphrase" title="Can also use compressed WIF key.">&nbsp;<button type=submit>Open</button><br>
+	<input id=passphrase type=password placeholder="Passphrase or private key" title="Can also use compressed WIF key.">&nbsp;<button type=submit>Open</button><br>
 	<br><br>Nothing is sent to our server, everything is done in the browser.<br>It gets utxo and sends signed txs via <span id=backend></span> API.
 	<br><br>You can download it from <a href='https://github.com/NxtChg/tsbw' target=_blank>github</a> and use it locally.
 </form>

@@ -41,9 +41,10 @@
 <div id=page>
 
 <form id=pass_form action="javascript:open_wallet();">
-	<br><input id=passphrase type=password placeholder="Passphrase" title="Can also use compressed WIF key.">&nbsp;<button type=submit>Open</button><br>
+	<br><input id=passphrase type=password placeholder="Passphrase or private key" title="Can also use compressed WIF key.">&nbsp;<button type=submit>Open</button><br>
 	<br><br>Nothing is sent to our server, everything is done in the browser.<br>It gets utxo and sends signed txs via <span id=backend></span> API.
 	<br><br>You can download it from <a href='https://github.com/NxtChg/tsbw' target=_blank>github</a> and use it locally.
+	<div style="position:absolute; right:12px; bottom:8px;"><a href="https://simcoin.info/tsbw/bcc/">Bitcoin Cash version</a></div>
 </form>
 
 <form id=send_form action="javascript:send_tx();">
@@ -60,7 +61,7 @@
 
 <script>
 
-var tx, keys, fee = 0.0001;
+var tx, keys, fee = 0.0003;
 
 function balance_cb(amount)
 {
