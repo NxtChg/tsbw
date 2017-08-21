@@ -1,5 +1,5 @@
 /*=============================================================================
-  Created by NxtChg (admin@nxtchg.com), 2016. License: Public Domain.
+  Created by NxtChg (admin@nxtchg.com), 2016-2017. License: Public Domain.
 =============================================================================*/
 
 // Based on coinb.in code by OutCast3k.
@@ -90,7 +90,7 @@ btc.base58_decode = function(str)
 	return bytes;
 };//___________________________________________________________________________
 
-btc.new_pk = function(sk) // Generate a public key from a private key.
+btc.new_pk = function(sk, uncompressed) // Generate a public key from a private key.
 {
 	var sk_bigint = BigInteger.fromByteArrayUnsigned(sk);
 	var curve = EllipticCurve.getSECCurveByName("secp256k1");
@@ -98,10 +98,13 @@ btc.new_pk = function(sk) // Generate a public key from a private key.
 	var p = curve.getG().multiply(sk_bigint);
 	var x = p.getX().toBigInteger();
 	var y = p.getY().toBigInteger();
-	
-	var compressed = [y.isEven() ? 0x02 : 0x03].concat(EllipticCurve.integerToBytes(x,32));
-	
-	return btc.bin2hex(compressed);
+
+	if(uncompressed)
+		var encoded = [0x04].concat(EllipticCurve.integerToBytes(x,32), EllipticCurve.integerToBytes(y,32));
+	else
+		var encoded = [y.isEven() ? 0x02 : 0x03].concat(EllipticCurve.integerToBytes(x,32));
+
+	return btc.bin2hex(encoded);
 };//___________________________________________________________________________
 
 btc.pk2adr = function(pk, is_script_hash)
@@ -117,9 +120,11 @@ btc.pk2adr = function(pk, is_script_hash)
 	return this.base58_encode(r.concat(checksum));
 };//___________________________________________________________________________
 
-btc.sk2wif = function(sk)
+btc.sk2wif = function(sk, uncompressed)
 {
-	var r = [0x80].concat(sk, [0x01]);
+	var r = [0x80].concat(sk);
+	
+	if(!uncompressed) r = r.concat([0x01]);
 
 	var checksum = SHA256(SHA256(r)).slice(0,4);
 
@@ -128,39 +133,27 @@ btc.sk2wif = function(sk)
 
 btc.wif2sk = function(wif)
 {
-	var key = this.base58_decode(wif);
-
-	// shouldn't we check the checksum here?
-	// or do we always call decode_adr first?
-
-	if(key.length < 34+4 && key[key.length-5] != 0x01)
-	{
-		throw 'only compressed keys are supported';
-	}
-
-	return key.slice(1, key.length-5);
+	return this.base58_decode(wif).slice(1, 33); // take first 32 bytes
 };//___________________________________________________________________________
 
 btc.decode_adr = function(adr)
 {
 	try
 	{
-		var bytes = btc.base58_decode(adr);
-		var front = bytes.slice(0, bytes.length-4);
-		var back  = bytes.slice(   bytes.length-4);
+		var bytes = btc.base58_decode(adr), len = bytes.length;
 
-		var checksum = SHA256(SHA256(front)).slice(0, 4);
+		var front = bytes.slice(0, len-4);
+		var back  = bytes.slice(   len-4);
 
-		if(checksum + '' != back + '') return false;
+		var ver = front[0], checksum = SHA256(SHA256(front)).slice(0,4);
 
-		var a = { version: front[0], type:'', bytes: front.slice(1) };
+		var a = { version: ver, type: '', bytes: front.slice(1), checksum: (checksum + '' == back + '') };
 
-		switch(a.version)
-		{
-			case 0x00: a.type = 'standard'; return a;
-			case 0x05: a.type = 'multisig'; return a;
-			case 0x80: a.type = 'wifkey';   return a;
-		}
+		if(ver == 0x00 && len == 25){ a.type = 'standard'; return a; }
+		if(ver == 0x05 && len == 25){ a.type = 'multisig'; return a; }
+
+		if(ver == 0x80 && len == 37                        ){ a.type = 'wifkey'; a.uncompressed =  true; return a; }
+		if(ver == 0x80 && len == 38 && bytes[len-5] == 0x01){ a.type = 'wifkey'; a.uncompressed = false; return a; }
 	}
 	catch(e){ }
 
@@ -180,13 +173,23 @@ btc.extend = function(pass)
 
 btc.get_keys = function(pass)
 {
+	var sk = this.extend(pass), uncompressed = false; // first, assume regular password
+
 	var adr = this.decode_adr(pass);
-    
-    var sk = (adr && adr.type == 'wifkey' ? this.wif2sk(pass) : this.extend(pass));
 
-	var pk = this.new_pk(sk);
+	if(adr !== false)
+	{
+		if(adr.type == 'wifkey')
+		{
+			if(adr.checksum){ sk = this.wif2sk(pass); uncompressed = adr.uncompressed; } else return false; // bad WIF key: checksum doesn't match
+		}
+		else
+			if(adr.checksum) return false; // trying to use address as password
+	}
 
-	return { 'sk': sk, 'pk': pk, 'adr': this.pk2adr(pk), 'wif': this.sk2wif(sk) };
+	var pk = this.new_pk(sk, uncompressed);
+
+	return { 'sk': sk, 'pk': pk, 'adr': this.pk2adr(pk), 'wif': this.sk2wif(sk, uncompressed) };
 };//___________________________________________________________________________
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -482,11 +485,11 @@ btc.new_tx = function()
 var test_tx = btc.new_tx();
 
 test_tx.add_input ('01020304abcdef', 1, '76a9141d8f0476ea05d9459e004fd0ff10588dd3979e6788ac');
-test_tx.add_output('13nwZVh9RsKuZGegVn5KWHM51dA98Mho5f',  1234);
+test_tx.add_output('13nwZVh9RsKuZGegVn5KWHM51dA98Mho5f',  0.02);
 test_tx.add_input ('99ff88ee77dd',   6, '76a9141d8f0476ea05d9459e004fd0ff10588dd3979e6788ac');
-test_tx.add_output('13hHvbAM89jEnZUK54g9i1RwskgRzWYBs1', 99999);
+test_tx.add_output('13hHvbAM89jEnZUK54g9i1RwskgRzWYBs1', 0.035);
 
-var keys = btc.get_keys('L2oAXFV4KPzoVUCEWgot4qBRAQ4GEDBBPe28XXgPTfNykt1beVtV');
+var keys = btc.get_keys('L2oAXFV4KPzoVUCEWgot4qBRAQ4GEDBBPe28XXgPTfNykt1beVtV'); if(keys === false){} // bad checksum or trying to use address as password
 
 var signed = test_tx.sign(keys); console.log(signed);
 

@@ -42,6 +42,7 @@
 
 <div id=page>
 <div id=bcc>Bitcoin Cash version</div>
+<!--b style="color:red">https://cashexplorer.bitcoin.com/ is down at the moment.<br>Try <a href="http://simcoin.info/tsbw/bcc/">http version</a> - it works via blockdozer.com.</b><br-->
 
 <form id=pass_form action="javascript:open_wallet();">
 	<input id=passphrase type=password placeholder="Passphrase or private key" title="Can also use compressed WIF key.">&nbsp;<button type=submit>Open</button><br>
@@ -83,7 +84,7 @@ function open_wallet()
 {
 	var pass = js.trim($('passphrase').value); if(pass.length < 1) return;
 
-	keys = btc.get_keys(pass);
+	keys = btc.get_keys(pass); if(keys === false){ alert('Bad private key!'); return; }
 
 	$('pass_form').hide();
 	$('send_form').show();

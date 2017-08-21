@@ -81,7 +81,7 @@ function open_wallet()
 {
 	var pass = js.trim($('passphrase').value); if(pass.length < 1) return;
 
-	keys = btc.get_keys(pass);
+	keys = btc.get_keys(pass); if(keys === false){ alert('Bad private key!'); return; }
 
 	$('pass_form').hide();
 	$('send_form').show();

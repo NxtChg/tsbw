@@ -1,0 +1,35 @@
+
+Password
+~~~~~~~~
+Key:     123
+Address: 1Jgt77gGxYBTv1vfJAxeFUpiR6rhz7UeDb
+
+Address
+~~~~~~~
+Key:     1Jgt77gGxYBTv1vfJAxeFUpiR6rhz7UeDb
+Address: <error>
+
+Bad Address
+~~~~~~~~~~~
+Key:     1Jgt77gGxYBTv1vfJAxeFUpiR6rhz7UeDa
+Address: 146eb3TR4QK991rU2nPXnAzvdvxjc4fGgi
+
+Compressed WIF
+~~~~~~~~~~~~~~
+Key:     Kx6EWgKRJ2GZuXbrDquQPAE8MWZLLdsT4YYgQs4hdF7rRL4jGLHx
+Address: 13pRRXkGVC9mhUSiw6xkYkMi1EX91VvsBE
+
+Uncompressed WIF
+~~~~~~~~~~~~~~~~
+Key:     5J1jV2CspMgKnS4N7zJJz8Xcej3Lngcu89WP53jXW4CXEGF9M3A
+Address: 1Nt6XLmq8k8noafGGFdfwue74uJTFu9vQC
+
+Bad Compressed WIF
+~~~~~~~~~~~~~~~~~~
+Key:     Kx6EWgKRJ2GZuXbrDquQPAE8MWZLLdsT4YYgQs4hdF7rRL4jGLHX
+Address: <error>
+
+Bad Uncompressed WIF
+~~~~~~~~~~~~~~~~~~~~
+Key:     5J1jV2CspMgKnS4N7zJJz8Xcej3Lngcu89WP53jXW4CXEGF9M3b
+Address: <error>
