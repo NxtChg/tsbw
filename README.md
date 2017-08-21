@@ -36,4 +36,4 @@ Nothing is sent to my server, everything is done in the browser. It gets utxo an
 
 All API access is wrapped in a "backend" object, which can be easily swapped. I wrote two: for blochchain.info and blockexplorer.com.
 
-You can enter a compressed WIF key as your passphrase; this means you can use the same wallets you have at https://coinb.in or any other wallet that allows exporting in this format.
+You can enter a compressed or uncompressed WIF key as your passphrase; this means you can use the same wallets you have at https://coinb.in or any other wallet that allows exporting in this format.
