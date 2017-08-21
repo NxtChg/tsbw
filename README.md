@@ -6,7 +6,7 @@ It's also not clear what information they collect. Besides, sometimes you just n
 
 So I made The Simplest Bitcoin Wallet :)
 
-https://simcoin.info/tsbw/
+https://tsbw.io/
 
 Mostly for myself, but maybe somebody will find it useful too. Main discussion is [here](https://simtalk.org:444/index.php?topic=174).
 
