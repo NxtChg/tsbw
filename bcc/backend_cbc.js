@@ -2,9 +2,15 @@
   Created by NxtChg (admin@nxtchg.com), 2016-2017. License: Public Domain.
 =============================================================================*/
 
-// Back-end for blockdozer.com API
+// Back-end for cashexplorer.bitcoin.com API
 
-var backend = { link: '<a href="https://cashexplorer.bitcoin.com/" target=_blank>cashexplorer.bitcoin.com</a>', adr_page: 'https://cashexplorer.bitcoin.com/address/' };
+var backend =
+{
+	host:      'cashexplorer.bitcoin.com',
+	home_page: 'https://cashexplorer.bitcoin.com/',
+	adr_page:  'https://cashexplorer.bitcoin.com/address/',
+	tx_page:   'https://cashexplorer.bitcoin.com/tx/'
+};//___________________________________________________________________________
 
 function backend_balance_cb(data)
 {

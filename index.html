@@ -62,7 +62,7 @@
 
 <script>
 
-var tx, keys, fee = 0.0003;
+var tx, keys, fee = 0.0009;
 
 function balance_cb(amount)
 {
@@ -89,6 +89,8 @@ function open_wallet()
 	$('to').focus();
 
 	$('adr').innerHTML = "<b style='font-size:16px'>" + keys.adr + "</b>&ndash;[<a href='javascript:show_wif()'>wif</a>]&ndash;<br><span id=wif></span>";
+
+	$('status').innerHTML = 'Fee: ' + fee;
 
 	refresh(); setInterval(refresh, 60000);
 }//____________________________________________________________________________

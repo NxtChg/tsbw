@@ -4,7 +4,13 @@
 
 // Back-end for blockdozer.com API
 
-var backend = { link: '<a href="http://blockdozer.com/" target=_blank>blockdozer.com</a>', adr_page: 'http://blockdozer.com/insight/address/' };
+var backend =
+{
+	host:      'blockdozer.com',
+	home_page: 'http://blockdozer.com/',
+	adr_page:  'http://blockdozer.com/insight/address/',
+	tx_page:   'http://blockdozer.com/insight/tx/'
+};//___________________________________________________________________________
 
 function backend_balance_cb(data)
 {

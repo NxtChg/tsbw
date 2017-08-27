@@ -71,7 +71,7 @@ function balance_cb(amount)
 {
 	if(isNaN(amount)) amount = '?'; else amount = js.format_money(amount, 8);
 
-	$('balance').innerHTML = "<span title='click to refresh' onclick='refresh(true);' style='cursor:pointer'>Balance: <b id=amt>" + amount + "</b> BTC</span> (<a href='" + backend.adr_page + keys.adr + "' target=_blank>transactions</a>)";
+	$('balance').innerHTML = "<span title='click to refresh' onclick='refresh(true);' style='cursor:pointer'>Balance: <b id=amt>" + amount + "</b> BTC</span> (<a href='" + backend.adr_page + keys.adr + "' target=_blank rel=\"noopener noreferrer\">transactions</a>)";
 }//____________________________________________________________________________
 
 function refresh(set_amount)
@@ -93,6 +93,8 @@ function open_wallet()
 
 	$('adr').innerHTML = "<b style='font-size:16px'>" + keys.adr + "</b>&ndash;[<a href='javascript:show_wif()'>wif</a>]&ndash;<br><span id=wif></span>";
 
+	$('status').innerHTML = 'Fee: ' + fee;
+
 	refresh(); setInterval(refresh, 60000);
 }//____________________________________________________________________________
 
@@ -105,7 +107,7 @@ function broadcast_cb(res)
 	{
 		$('to'    ).value = '';
 		$('amount').value = '';
-		$('status').innerHTML = '<a href="http://blockdozer.com/insight/tx/' + tx.txid() + '" target=_blank>Transaction</a> sent.';
+		$('status').innerHTML = '<a href="'+ backend.tx_page + tx.txid() + '" target=_blank rel="noopener noreferrer">Transaction</a> sent.';
 	}
 	else $('status').innerHTML = 'Error: ' + res;
 
@@ -175,7 +177,7 @@ else
 
 	if('withCredentials' in x)
 	{
-		$('backend').innerHTML = backend.link;
+		$('backend').innerHTML = '<a href="'+backend.home_page+'" target=_blank rel="noopener noreferrer">'+backend.host+'</a>';
 		$('pass_form' ).show();
 		$('passphrase').focus();
 	}
