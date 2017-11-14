@@ -4,7 +4,7 @@
 
 // Back-end for blockexplorer.com API
 
-var backend = { link: '<a href="https://blockexplorer.com/" target=_blank>blockexplorer.com</a>', adr_page: 'https://blockexplorer.com/address/' };
+var backend = { link: '<a href="https://blockexplorer.com/" target=_blank rel="noopener noreferrer">blockexplorer.com</a>', adr_page: 'https://blockexplorer.com/address/' };
 
 function backend_balance_cb(res)
 {

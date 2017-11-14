@@ -4,7 +4,7 @@
 
 // Back-end for blockchain.info API
 
-var backend = { link: '<a href="https://blockchain.info/" target=_blank>blockchain.info</a>', adr_page: 'https://blockchain.info/address/' };
+var backend = { link: '<a href="https://blockchain.info/" target=_blank rel="noopener noreferrer">blockchain.info</a>', adr_page: 'https://blockchain.info/address/' };
 
 function backend_balance_cb(res)
 {
