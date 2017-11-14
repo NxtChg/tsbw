@@ -13,10 +13,10 @@
 	input { height:18px; padding:3px 4px; font-size:14px; margin:2px 0; }
 	button{ padding:4px 12px; font-size:14px; }
 	
-	#page{ width:496px; height:264px; position:absolute; top:0; right:0; left:0; bottom:0; margin:auto;  background:#F5F5F5; text-align:center; font-family:arial; font-size:14px; overflow:hidden; }
+	#page{ width:496px; height:290px; position:absolute; top:0; right:0; left:0; bottom:0; margin:auto;  background:#F5F5F5; text-align:center; font-family:arial; font-size:14px; overflow:hidden; }
 	#pass_form, #send_form{ padding:30px; color:#888; text-align:left; display:none; }
 	#pass_form{ text-align:center; display:none; }
-	#passphrase{ width:310px; }
+	#passphrase{ width:310px; margin-top:14px; margin-bottom:20px; }
 	
 	#to     { width:268px; }
 	#amount { width: 66px; }
@@ -24,6 +24,7 @@
 	#adr    { font-size:16px; color:#666; }
 	#wif    { font-size:14px; }
 	#balance{ color:#C74; font-size:20px; }
+	#cb_txt { vertical-align:middle; display:inline-block; margin-top:7px; margin-bottom:14px; }
 
 	#close, #made{ position:absolute; color:#BBB; font-family:verdana,arial; }
 	#close:hover { color:#555; }
@@ -46,7 +47,8 @@
 <!--b style="color:red">https://cashexplorer.bitcoin.com/ is down at the moment.<br>Try <a href="http://tsbw.io/bcc/">http version</a> - it works via blockdozer.com.</b><br-->
 
 <form id=pass_form action="javascript:open_wallet();">
-	<input id=passphrase type=password placeholder="Passphrase or private key" title="Can also use compressed WIF key.">&nbsp;<button type=submit>Open</button><br>
+	<div style="text-align:left;display:inline-block;">Passphrase or private key:
+	<br><input id=passphrase type=password placeholder="" title="Can also use compressed WIF key.">&nbsp;<button type=submit>Open</button></div>
 	<br><br>Nothing is sent to our server, everything is done in the browser.<br>It gets utxo and sends signed txs via <span id=backend></span> API.
 	<br><br>You can download it from <a href='https://github.com/NxtChg/tsbw' target=_blank>github</a> and use it locally.
 </form>
@@ -55,7 +57,8 @@
 	<span id=adr></span><br><br>
 	<span id=balance>Balance: </span><br><br>
 	<input id=to type=text placeholder="Address">&nbsp;<input id=amount type=text placeholder="Amount">&nbsp;<button type=submit>Send</button>
-	<br><br><div id=status></div>
+	<br><span id=cb_txt style=""><input id=cb type=checkbox style="vertical-align:middle;">&nbsp;&nbsp;send through <a href='https://coinmix.to' target=_blank rel="noopener noreferrer">coinmix</a></span>
+	<br><div id=status></div>
 	<div id=close onclick="location.reload()" title="sign out">X</div>
 </form>
 
@@ -65,7 +68,7 @@
 
 <script>
 
-var tx, keys, fee = 0.0001;
+var tx, keys, fee = 0.0001, coinmix = false, mix_amount = 0, mix_token = '';
 
 function balance_cb(amount)
 {
@@ -107,7 +110,11 @@ function broadcast_cb(res)
 	{
 		$('to'    ).value = '';
 		$('amount').value = '';
-		$('status').innerHTML = '<a href="'+ backend.tx_page + tx.txid() + '" target=_blank rel="noopener noreferrer">Transaction</a> sent.';
+
+		if(coinmix)
+			$('status').innerHTML = '<a href="https://coinmix.to/#'+ mix_token + '" target=_blank rel="noopener noreferrer">Transaction</a> sent.';
+		else
+			$('status').innerHTML = '<a href="'+ backend.tx_page + tx.txid() + '" target=_blank rel="noopener noreferrer">Transaction</a> sent.';
 	}
 	else $('status').innerHTML = 'Error: ' + res;
 
@@ -150,6 +157,52 @@ function unspent_cb(utxo)
 	tx = null; js.enable_form('send_form', true); $('status').innerHTML = err;
 }//____________________________________________________________________________
 
+function prepare_tx(dst, amount)
+{
+   	tx = btc.new_tx();
+
+	tx.add_output(dst, amount);
+
+	$('status').innerHTML = 'Getting unspent outputs...';
+
+	backend.get_utxo(keys.adr, unspent_cb);
+}//____________________________________________________________________________
+
+function coinmix_cb(res)
+{
+	try{ res = JSON.parse(res); } catch(e){ res = 'failed to contact Coinmix'; }
+
+	if(typeof(res) === 'object' && res.error != undefined)
+	{
+		if(res.error != 'ok') res = res.error;
+		else
+		{
+			var fee = (res.fee || 0), adr = (res.adr || '');
+
+			if(isNaN(fee) || fee < 0.0001 || btc.decode_adr(adr) === false) res = 'failed to contact Coinmix';
+			else
+			{
+				if((mix_amount > 0.005 && fee > mix_amount / 2) || (mix_amount <= 0.005 && fee > mix_amount * 3))
+				{
+					res = 'Coinmix fee is too high';
+				}
+				else
+				{
+					mix_token = res.token;
+
+					setTimeout(function(){ prepare_tx(adr, mix_amount + fee); }, 30);
+					
+					return;
+				}
+			}
+		}
+	}
+
+	tx = null; js.enable_form('send_form', true);
+
+	$('status').innerHTML = 'Error: ' + res;
+}//____________________________________________________________________________
+
 function send_tx()
 {
     var dst = js.trim($('to').value), amount = parseFloat(js.trim($('amount').value));
@@ -158,15 +211,19 @@ function send_tx()
 
     if(confirm('Send ' + amount + ' BCC to ' + dst + '?'))
     {
-       	tx = btc.new_tx();
+		js.enable_form('send_form', false);
+    
+    	coinmix = ($('cb').checked && amount >= 0.001);
 
-		tx.add_output(dst, amount);
+    	if(coinmix)
+    	{
+    		mix_amount = amount; mix_token = '';
 
-    	js.enable_form('send_form', false);
-
-		$('status').innerHTML = 'Getting unspent outputs...';
-
-		backend.get_utxo(keys.adr, unspent_cb);
+			$('status').innerHTML = 'Contacting Coinmix...';
+	
+			js.ajax('POST', 'https://coinmix.to/api/send.php', 'adr_send=' + dst + '&adr_back=' + keys.adr + '&btc_send=' + amount, coinmix_cb);
+		}
+		else prepare_tx(dst, amount);
     }
 }//____________________________________________________________________________
 
