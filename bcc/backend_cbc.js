@@ -57,19 +57,19 @@ backend.get_balance = function(adr, cb)
 {
 	this.balance_cb = cb;
 	
-	js.ajax('GET', 'https://cashexplorer.bitcoin.com/insight-api/addr/' + adr, '', backend_balance_cb);
+	js.ajax('GET', 'https://cashexplorer.bitcoin.com/api/addr/' + adr, '', backend_balance_cb);
 };//___________________________________________________________________________
 
 backend.get_utxo = function(adr, cb)
 {
 	this.unspent_cb = cb;
 	
-	js.ajax('GET', 'https://cashexplorer.bitcoin.com/insight-api/addr/' + adr + '/utxo', '', backend_unspent_cb);
+	js.ajax('GET', 'https://cashexplorer.bitcoin.com/api/addr/' + adr + '/utxo', '', backend_unspent_cb);
 };//___________________________________________________________________________
 
 backend.send = function(tx, cb)
 {
 	this.send_cb = cb;
 
-	js.ajax('POST', 'https://cashexplorer.bitcoin.com/insight-api/tx/send', 'rawtx=' + tx, backend_send_cb);
+	js.ajax('POST', 'https://cashexplorer.bitcoin.com/api/tx/send', 'rawtx=' + tx, backend_send_cb);
 };//___________________________________________________________________________
