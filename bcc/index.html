@@ -37,13 +37,14 @@
 <script language='JavaScript' type='text/javascript' src='jsbn.js'></script>
 <script language='JavaScript' type='text/javascript' src='elliptic.js'></script>
 <script language='JavaScript' type='text/javascript' src='btc.js'></script>
+<script language='JavaScript' type='text/javascript' src='cashaddr.js'></script>
 <script language='JavaScript' type='text/javascript' src='backend_ebc.js'></script>
 </head>
 <body>
 
 <div id=page>
 <div id=bcc>Bitcoin Cash version</div>
-<!--b style="color:red">https://explorer.bitcoin.com/bch/ is down at the moment.<br>Try <a href="http://tsbw.io/bcc/">http version</a> - it works via blockdozer.com.</b><br-->
+<!--b style="color:red">https://explorer.bitcoin.com/ is down at the moment.<br>Try <a href="http://tsbw.io/bcc/">http version</a> - it works via blockdozer.com.</b><br-->
 
 <form id=pass_form action="javascript:open_wallet();">
 	<input id=passphrase type=password placeholder="Passphrase or private key" title="Can also use compressed WIF key.">&nbsp;<button type=submit>Open</button><br>
@@ -153,6 +154,8 @@ function unspent_cb(utxo)
 function send_tx()
 {
     var dst = js.trim($('to').value), amount = parseFloat(js.trim($('amount').value));
+
+	var pk = cashaddr2pk(dst); if(pk !== false){ dst = pk2adr(pk); $('to').value = dst; }
 
     if(dst == '' || btc.decode_adr(dst) === false || isNaN(amount) || amount < 0.0001) return;
 

@@ -1,5 +1,5 @@
 /*=============================================================================
-  Created by NxtChg (admin@nxtchg.com), 2016-2017. License: Public Domain.
+  Created by NxtChg (admin@nxtchg.com), 2016-2018. License: Public Domain.
 =============================================================================*/
 
 // Back-end for explorer.bitcoin.com API
