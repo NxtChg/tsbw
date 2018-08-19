@@ -14,7 +14,7 @@
 	button{ padding:4px 12px; font-size:14px; }
 	
 	#page{ width:496px; height:290px; position:absolute; top:0; right:0; left:0; bottom:0; margin:auto;  background:#F5F5F5; text-align:center; font-family:arial; font-size:14px; overflow:hidden; }
-	#pass_form, #send_form{ padding:30px; color:#888; text-align:left; display:none; }
+	#pass_form, #send_form{ padding:30px; color:#888; text-align:left; display:none; white-space:nowrap; }
 	#pass_form{ text-align:center; display:none; }
 	#passphrase{ width:310px; margin-top:14px; margin-bottom:20px; }
 	
@@ -38,7 +38,7 @@
 <script language='JavaScript' type='text/javascript' src='jsbn.js'></script>
 <script language='JavaScript' type='text/javascript' src='elliptic.js'></script>
 <script language='JavaScript' type='text/javascript' src='btc.js'></script>
-<script language='JavaScript' type='text/javascript' src='backend_cbc.js'></script>
+<script language='JavaScript' type='text/javascript' src='backend_ebc.js'></script>
 </head>
 <body>
 
@@ -74,7 +74,7 @@ function balance_cb(amount)
 {
 	if(isNaN(amount)) amount = '?'; else amount = js.format_money(amount, 8);
 
-	$('balance').innerHTML = "<span title='click to refresh' onclick='refresh(true);' style='cursor:pointer'>Balance: <b id=amt>" + amount + "</b> BCC</span> (<a href='" + backend.adr_page + keys.adr + "' target=_blank rel=\"noopener noreferrer\">transactions</a>)";
+	$('balance').innerHTML = "<span title='click to refresh' onclick='refresh(true);' style='cursor:pointer'>Balance: <b id=amt>" + amount + "</b> BCH</span> (<a href='" + backend.adr_page + keys.adr + "' target=_blank rel=\"noopener noreferrer\">transactions</a>)";
 }//____________________________________________________________________________
 
 function refresh(set_amount)
@@ -150,7 +150,7 @@ function unspent_cb(utxo)
 
 			return;
 		}
-		else err = 'Not enough money! Need ' + js.format_money(tx_total - total, 8) + ' BCC more.';
+		else err = 'Not enough money! Need ' + js.format_money(tx_total - total, 8) + ' BCH more.';
 	}
 	else err = 'Failed to get unspent outputs!';
 
@@ -209,7 +209,7 @@ function send_tx()
 
     if(dst == '' || btc.decode_adr(dst) === false || isNaN(amount) || amount < 0.0001) return;
 
-    if(confirm('Send ' + amount + ' BCC to ' + dst + '?'))
+    if(confirm('Send ' + amount + ' BCH to ' + dst + '?'))
     {
 		js.enable_form('send_form', false);
     
