@@ -169,6 +169,22 @@ btc.extend = function(pass)
 	return SHA256(pass);
 };//___________________________________________________________________________
 
+btc.check_entropy = function(pass)
+{
+	var ent = 0, dic = [];
+	
+	for(var i = 0; i < pass.length; i++){ dic[pass[i]] = (dic[pass[i]] || 0) + 1; }
+
+	for(var k in dic)
+	{
+		var p = dic[k] / pass.length;
+
+		ent -= (p * Math.log(p) * Math.LOG2E); // log2(p)
+	}
+
+	return (ent > 2.999); // min 8 random chars
+};//___________________________________________________________________________
+
 // Generate a private and public keypair, with address and WIF address.
 
 btc.get_keys = function(pass)

@@ -107,14 +107,13 @@ btc.new_pk = function(sk, uncompressed) // Generate a public key from a private 
 	return btc.bin2hex(encoded);
 };//___________________________________________________________________________
 
-btc.pk2adr = function(pk, test, is_script_hash)
+btc.pk2adr = function(pk, is_script_hash)
 {
 	var r = btc.hex2bin(pk);
 	
 	if(!is_script_hash) r = RIPEMD160(SHA256(r));
 
-	if (test) r.unshift(0x6F);
-	else r.unshift(0x00);
+	r.unshift(0x00);
 
 	var checksum = SHA256(SHA256(r)).slice(0, 4);
 
@@ -124,7 +123,6 @@ btc.pk2adr = function(pk, test, is_script_hash)
 btc.sk2wif = function(sk, uncompressed)
 {
 	var r = [0x80].concat(sk);
-	if (test) r = [0xef].concat(sk);
 	
 	if(!uncompressed) r = r.concat([0x01]);
 
@@ -154,9 +152,6 @@ btc.decode_adr = function(adr)
 		if(ver == 0x00 && len == 25){ a.type = 'standard'; return a; }
 		if(ver == 0x05 && len == 25){ a.type = 'multisig'; return a; }
 
-		if(ver == 0x6F && len == 25){ a.type = 'standard'; return a; }
-		if(ver == 0xC4 && len == 25){ a.type = 'multisig'; return a; }
-
 		if(ver == 0x80 && len == 37                        ){ a.type = 'wifkey'; a.uncompressed =  true; return a; }
 		if(ver == 0x80 && len == 38 && bytes[len-5] == 0x01){ a.type = 'wifkey'; a.uncompressed = false; return a; }
 	}
@@ -174,28 +169,26 @@ btc.extend = function(pass)
 	return SHA256(pass);
 };//___________________________________________________________________________
 
-btc.entropy = function(pass)
+btc.check_entropy = function(pass)
 {
-	var phrase = pass.split("");
-	var probs = phrase.reduce((prev, curr) => (prev[curr] = ++prev[curr] || 1, prev), {})
-	var ent = 0;
-	console.log(probs)
-	for (var k in probs) {
-		//var value = dict[key];
-		var p = probs[k] / phrase.length;
-		ent += (p*Math.log2(p))
+	var ent = 0, dic = [];
+	
+	for(var i = 0; i < pass.length; i++){ dic[pass[i]] = (dic[pass[i]] || 0) + 1; }
+
+	for(var k in dic)
+	{
+		var p = dic[k] / pass.length;
+
+		ent -= (p * Math.log(p) * Math.LOG2E); // log2(p)
 	}
-	ent *= -1;
-	if (ent>3) return true;
-	else return false;
+
+	return (ent > 2.999); // min 8 random chars
 };//___________________________________________________________________________
 
 // Generate a private and public keypair, with address and WIF address.
 
-btc.get_keys = function(pass, test)
+btc.get_keys = function(pass)
 {
-	if (!this.entropy(pass)) return false;
-
 	var sk = this.extend(pass), uncompressed = false; // first, assume regular password
 
 	var adr = this.decode_adr(pass);
@@ -212,7 +205,7 @@ btc.get_keys = function(pass, test)
 
 	var pk = this.new_pk(sk, uncompressed);
 
-	return { 'sk': sk, 'pk': pk, 'adr': this.pk2adr(pk, test), 'wif': this.sk2wif(sk, uncompressed, test) };
+	return { 'sk': sk, 'pk': pk, 'adr': this.pk2adr(pk), 'wif': this.sk2wif(sk, uncompressed) };
 };//___________________________________________________________________________
 
 ///////////////////////////////////////////////////////////////////////////////

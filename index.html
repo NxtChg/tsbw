@@ -13,7 +13,7 @@
 	input { height:18px; padding:3px 4px; font-size:14px; margin:2px 0; }
 	button{ padding:4px 12px; font-size:14px; }
 	
-	#page{ width:496px; height:255px; position:absolute; top:0; right:0; left:0; bottom:0; margin:auto;  background:#F5F5F5; text-align:center; font-family:arial; font-size:14px; overflow:hidden; }
+	#page{ width:496px; height:244px; position:absolute; top:0; right:0; left:0; bottom:0; margin:auto;  background:#F5F5F5; text-align:center; font-family:arial; font-size:14px; overflow:hidden; }
 	#pass_form, #send_form{ padding:30px; color:#888; text-align:left; display:none; }
 	#pass_form{ text-align:center; display:none; }
 	#passphrase{ width:310px; }
@@ -45,7 +45,7 @@
 	<br><input id=passphrase type=password placeholder="Passphrase or private key" title="Can also use compressed WIF key.">&nbsp;<button type=submit>Open</button><br>
 	<br><br>Nothing is sent to our server, everything is done in the browser.<br>It gets utxo and sends signed txs via <span id=backend></span> API.
 	<br><br>You can download it from <a href='https://github.com/NxtChg/tsbw' target=_blank>github</a> and use it locally.
-	<div style="position:absolute; right:12px; bottom:8px;"><a id="testswitch" href="?test">Testnet</a> / <a href="bcc/">Bitcoin Cash Version</a></div>
+	<div style="position:absolute; right:12px; bottom:8px;"><a href="bcc/">Bitcoin Cash version</a> | <a href="test/">TestNet</a></div>
 </form>
 
 <form id=send_form action="javascript:send_tx();">
@@ -62,23 +62,13 @@
 
 <script>
 
-var tx, keys, fee = 0.0009;
-
-var test = 0;
-var param = window.location.search.substring(1);
-if (param == "test") test = 1;
-if (backend.test_set(test)) {
-	console.log("Running on testnet.");
-	document.getElementById("testswitch").innerHTML = "Live";
-	var getUrl = window.location;
-	document.getElementById("testswitch").href = getUrl.pathname.split('?')[0];
-}
+var tx, keys, fee = 0.00002;
 
 function balance_cb(amount)
 {
 	if(isNaN(amount)) amount = '?'; else amount = js.format_money(amount, 8);
 
-	$('balance').innerHTML = "<span title='click to refresh' onclick='refresh(true);' style='cursor:pointer'>Balance: <b id=amt>" + amount + "</b> BTC</span> (<a href='" + backend.adr_page + keys.adr + "' target=_blank rel=\"noopener noreferrer\">Transactions</a>)";
+	$('balance').innerHTML = "<span title='click to refresh' onclick='refresh(true);' style='cursor:pointer'>Balance: <b id=amt>" + amount + "</b> BTC</span> (<a href='" + backend.adr_page + keys.adr + "' target=_blank rel=\"noopener noreferrer\">transactions</a>)";
 }//____________________________________________________________________________
 
 function refresh(set_amount)
@@ -92,7 +82,12 @@ function open_wallet()
 {
 	var pass = js.trim($('passphrase').value); if(pass.length < 1) return;
 
-	keys = btc.get_keys(pass, test); if(keys === false){ alert('Bad private key or weak password, please try again.'); return; }
+	if(!btc.check_entropy(pass))
+	{
+		if(!confirm('This passphrase is weak, are you sure?')){ $('passphrase').value = ''; return; }
+	}
+
+	keys = btc.get_keys(pass); if(keys === false){ alert('Bad private key!'); return; }
 
 	$('pass_form').hide();
 	$('send_form').show();
@@ -114,7 +109,7 @@ function broadcast_cb(res)
 	{
 		$('to'    ).value = '';
 		$('amount').value = '';
-		$('status').innerHTML = '<a href="' + backend.api + '/tx/' + tx.txid() + '" target=_blank rel="noopener noreferrer">Transaction</a> sent.';
+		$('status').innerHTML = '<a href="'+ backend.tx_page + tx.txid() + '" target=_blank rel="noopener noreferrer">Transaction</a> sent.';
 	}
 	else $('status').innerHTML = 'Error: ' + res;
 
@@ -128,6 +123,8 @@ function broadcast()
 	var signed = tx.sign(keys);
     
 	$('status').innerHTML = 'Broadcasting...';
+
+	console.log('TX: ', signed);
 
 	backend.send(signed, broadcast_cb);
 }//____________________________________________________________________________
@@ -161,7 +158,6 @@ function send_tx()
 {
     var dst = js.trim($('to').value), amount = parseFloat(js.trim($('amount').value));
 
-	console.log(btc.decode_adr(dst));
     if(dst == '' || btc.decode_adr(dst) === false || isNaN(amount) || amount < 0.0001) return;
 
     if(confirm('Send ' + amount + ' BTC to ' + dst + '?'))
@@ -185,7 +181,7 @@ else
 
 	if('withCredentials' in x)
 	{
-		$('backend').innerHTML = backend.link;
+		$('backend').innerHTML = '<a href="'+backend.home_page+'" target=_blank rel="noopener noreferrer">'+backend.host+'</a>';
 		$('pass_form' ).show();
 		$('passphrase').focus();
 	}
