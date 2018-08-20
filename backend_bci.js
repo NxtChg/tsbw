@@ -4,7 +4,17 @@
 
 // Back-end for blockchain.info API
 
-var backend = { link: '<a href="https://blockchain.info/" target=_blank rel="noopener noreferrer">blockchain.info</a>', adr_page: 'https://blockchain.info/address/' };
+var backend = { api: 'https://blockchain.info', link: '<a href="https://blockchain.info/" target=_blank rel="noopener noreferrer">blockchain.info</a>', adr_page: 'https://blockchain.info/address/' };
+
+backend.test_set = function(test)
+{
+	if (test) {
+		backend.api = 'https://testnet.blockchain.info';
+		backend.adr_page = 'https://testnet.blockchain.info/address/';
+		return true;
+	}
+	return false;
+};
 
 function backend_balance_cb(res)
 {
@@ -41,19 +51,19 @@ backend.get_balance = function(adr, cb)
 {
 	this.balance_cb = cb;
 	
-	js.ajax('GET', 'https://blockchain.info/q/addressbalance/' + adr, 'cors=true', backend_balance_cb);
+	js.ajax('GET', backend.api + '/q/addressbalance/' + adr, 'cors=true', backend_balance_cb);
 };//___________________________________________________________________________
 
 backend.get_utxo = function(adr, cb)
 {
 	this.unspent_cb = cb;
 	
-	js.ajax('GET', 'https://blockchain.info/unspent?active=' + adr, 'cors=true', backend_unspent_cb);
+	js.ajax('GET', backend.api + '/unspent?active=' + adr, 'cors=true', backend_unspent_cb);
 };//___________________________________________________________________________
 
 backend.send = function(tx, cb)
 {
 	this.send_cb = cb;
 
-	js.ajax('POST', 'https://blockchain.info/pushtx', 'tx=' + tx, backend_send_cb);
+	js.ajax('POST', backend.api + '/pushtx', 'tx=' + tx, backend_send_cb);
 };//___________________________________________________________________________
