@@ -120,6 +120,32 @@ btc.pk2adr = function(pk, is_script_hash)
 	return this.base58_encode(r.concat(checksum));
 };//___________________________________________________________________________
 
+btc.pks2msig = function(pks, required)
+{
+	var s = this.new_script();
+
+	s.write_opcode(81 + parseInt(required) - 1); // OP_1
+
+	for(var i = 0; i < pks.length; i++)
+	{
+		s.write_bytes(this.hex2bin(pks[i]));
+	}
+
+	s.write_opcode(81 + pks.length - 1);	// OP_1
+	s.write_opcode(174);					// OP_CHECKMULTISIG
+
+	var r = RIPEMD160(SHA256(s.buffer));
+
+	r.unshift(0x05);
+
+	var checksum = SHAx2(r).slice(0,4);
+
+	var adr = this.base58_encode(r.concat(checksum));
+
+	return { 'adr': adr, 'redeem': this.bin2hex(s.buffer) };
+}//___________________________________________________________________________
+
+
 btc.sk2wif = function(sk, uncompressed)
 {
 	var r = [0x80].concat(sk);
