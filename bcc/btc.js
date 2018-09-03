@@ -136,13 +136,19 @@ btc.pks2msig = function(pks, required)
 
 	var r = RIPEMD160(SHA256(s.buffer));
 
+	var s2 = this.new_script();
+
+	s2.write_opcode(169); //OP_HASH160
+	s2.write_bytes (r);
+	s2.write_opcode(135); //OP_EQUAL
+
 	r.unshift(0x05);
 
 	var checksum = SHAx2(r).slice(0,4);
 
 	var adr = this.base58_encode(r.concat(checksum));
 
-	return { 'adr': adr, 'redeem': this.bin2hex(s.buffer) };
+	return { adr: adr, redeem: this.bin2hex(s.buffer), script_pk: this.bin2hex(s2.buffer) };
 }//___________________________________________________________________________
 
 
@@ -473,6 +479,28 @@ btc.new_tx = function()
 		}
 
 		console.log('TXID: '+tx.txid(), 'TX: '+btc.bin2hex(this.serialize()));
+
+		return btc.bin2hex(this.serialize());
+	};//_______________________________________________________________________
+
+	tx.sign_msig = function(keys) // replaces tx inputs! Signs the FIRST key.
+	{
+		for(var i = 0; i < this.ins.length; i++) // sign inputs
+		{
+			var s = btc.new_script();
+
+			s.write_opcode(0);
+
+			var redeem_script = this.ins[i].script.buffer;
+
+			s.write_bytes(this.sign_input(i, keys.sk));
+			s.write_bytes([]);
+			//s.write_bytes(this.sign_input(i, keys2.sk));
+
+			s.write_bytes(redeem_script);
+
+			this.ins[i].script = s;
+		}
 
 		return btc.bin2hex(this.serialize());
 	};//_______________________________________________________________________
