@@ -26,7 +26,7 @@ function backend_unspent_cb(data)
 	try{ u = JSON.parse(data); } catch(e){ u = false; }
 
 	if(u !== false)
-	{
+	{ 
 		utxo = [];
 	                               
 		for(var i = 0; i < u.length; i++)
