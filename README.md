@@ -28,7 +28,7 @@ tx.add_input ('01020304abcdef', 0, '76a9141d8f0476ea05d9459e004fd0ff10588dd3979e
 tx.add_output('13nwZVh9RsKuZGegVn5KWHM51dA98Mho5f', 1234); // address, amount
 
 var keys = btc.get_keys('123'); // 123 = passphrase
-
+ 
 var signed = tx.sign(keys); console.log(signed);
 ```
 
