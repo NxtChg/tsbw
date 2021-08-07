@@ -81,7 +81,7 @@ btc.base58_decode = function(str)
 		bi = bi.add(BigInteger.valueOf(idx).multiply(base.pow(str.length - 1 - i)));
 	
 		if(str[i] == '1') zeros_cnt++; else zeros_cnt = 0;
-	}
+	} 
 	
 	var bytes = bi.toByteArrayUnsigned();
 
